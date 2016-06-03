@@ -105,8 +105,6 @@ func Evalis(list *LispList) LispObject {
 
 	switch obj := list.First().(type) {
 	case LispSymbol:
-		// Yuck -- specials forms are strings
-		// for now.
 		if obj == SYMBOLS["if"] {
 			// ("if" <cond> <if-true> <if-false>)
 			cond := list.Rest().First()
