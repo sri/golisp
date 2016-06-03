@@ -19,9 +19,6 @@ func LispObj2String(obj LispObj) string {
 	case string:
 		return fmt.Sprintf("%#v", obj)
 	case *LispList:
-		if o == NIL {
-			return "nil"
-		}
 		return o.String()
 	default:
 		return fmt.Sprintf("%v", obj)
@@ -54,11 +51,19 @@ func (list *LispList) Rest() *LispList {
 func (list *LispList) String() string {
 	result := []string{}
 
+	if list == NIL {
+		return "nil"
+	}
+
 	result = append(result, "(")
-	for ; list != NIL; list = list.Rest() {
+	for {
+		if list == NIL {
+			break
+		}
 		result = append(result, LispObj2String(list.First()))
-		if list.Rest() != NIL {
-			result = append(result, ", ")
+		list = list.Rest()
+		if list != NIL {
+			result = append(result, " ")
 		}
 	}
 	result = append(result, ")")
