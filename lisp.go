@@ -5,10 +5,10 @@ import (
 	"strings"
 )
 
-type LispObj interface{}
+type LispObject interface{}
 
 type LispList struct {
-	first LispObj
+	first LispObject
 	rest  *LispList
 }
 
@@ -24,7 +24,7 @@ func initSymbols() {
 	SYMBOLS["if"] = LispSymbol{ "if" }
 }
 
-func LispObj2String(obj LispObj) string {
+func LispObject2String(obj LispObject) string {
 	switch o := obj.(type) {
 	case string:
 		return fmt.Sprintf("%#v", obj)
@@ -38,7 +38,7 @@ func LispObj2String(obj LispObj) string {
 
 }
 
-func IsTrue(obj LispObj) bool {
+func IsTrue(obj LispObject) bool {
 	if obj == NIL {
 		return false
 	}
@@ -46,7 +46,7 @@ func IsTrue(obj LispObj) bool {
 }
 
 // Methods on LispList:
-func (list *LispList) First() LispObj {
+func (list *LispList) First() LispObject {
 	if list == NIL {
 		return NIL
 	}
@@ -72,7 +72,7 @@ func (list *LispList) String() string {
 		if list == NIL {
 			break
 		}
-		result = append(result, LispObj2String(list.First()))
+		result = append(result, LispObject2String(list.First()))
 		list = list.Rest()
 		if list != NIL {
 			result = append(result, " ")
@@ -83,14 +83,14 @@ func (list *LispList) String() string {
 	return strings.Join(result, "")
 }
 
-func Push(first LispObj, rest *LispList) *LispList {
+func Push(first LispObject, rest *LispList) *LispList {
 	result := new(LispList)
 	result.first = first
 	result.rest = rest
 	return result
 }
 
-func NewList(args ...LispObj) *LispList {
+func NewList(args ...LispObject) *LispList {
 	result := NIL
 	for i := len(args) - 1; i >= 0; i-- {
 		result = Push(args[i], result)
@@ -98,7 +98,7 @@ func NewList(args ...LispObj) *LispList {
 	return result
 }
 
-func Evalis(list *LispList) LispObj {
+func Evalis(list *LispList) LispObject {
 	if list == NIL {
 		return NIL
 	}
@@ -122,7 +122,7 @@ func Evalis(list *LispList) LispObj {
 	return NIL
 }
 
-func Eval(obj LispObj) LispObj {
+func Eval(obj LispObject) LispObject {
 	switch o := obj.(type) {
 	case *LispList:
 		return Evalis(o)
@@ -136,7 +136,7 @@ func main() {
 
 	empty := NewList()
 	result := Eval(empty)
-	fmt.Printf("eval(empty list) => %s\n", LispObj2String(result))
+	fmt.Printf("eval(empty list) => %s\n", LispObject2String(result))
 
 	list := NewList(1, 2, NewList(3.1, 3.2, 3.3), 4, 5, "six")
 	fmt.Printf("printing out list: %s\n", list.String())
@@ -145,11 +145,11 @@ func main() {
 	result = Eval(list)
 	fmt.Printf("%s expr should eval to 3 => %s\n",
 		list.String(),
-		LispObj2String(result))
+		LispObject2String(result))
 
 	list = NewList(SYMBOLS["if"], NIL, 3, 4)
 	result = Eval(list)
 	fmt.Printf("%s expr should eval to 4 => %s\n",
 		list.String(),
-		LispObj2String(result))
+		LispObject2String(result))
 }
