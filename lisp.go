@@ -22,6 +22,7 @@ var SYMBOLS = make(map[string]LispSymbol)
 
 func initSymbols() {
 	SYMBOLS["if"] = LispSymbol{ "if" }
+	SYMBOLS["quote"] = LispSymbol{ "quote" }
 }
 
 func LispObject2String(obj LispObject) string {
@@ -106,13 +107,17 @@ func Evalis(list *LispList) LispObject {
 	switch obj := list.First().(type) {
 	case LispSymbol:
 		if obj == SYMBOLS["if"] {
-			// ("if" <cond> <if-true> <if-false>)
+			// (if <cond> <if-true> <if-false>)
 			cond := list.Rest().First()
 			body := list.Rest().Rest()
 			if IsTrue(Eval(cond)) {
 				return Eval(body.First())
 			}
 			return Eval(body.Rest().First())
+		} else if obj == SYMBOLS["quote"] {
+			// (quote (a b c)) => (a b c)
+			// (quote z) => z
+			return list.Rest().First()
 		}
 	default:
 		return NIL
