@@ -14,10 +14,22 @@ type LispList struct {
 
 var NIL *LispList = new(LispList)
 
+type LispSymbol struct {
+	name string
+}
+
+var SYMBOLS = make(map[string]LispSymbol)
+
+func initSymbols() {
+	SYMBOLS["if"] = LispSymbol{ "if" }
+}
+
 func LispObj2String(obj LispObj) string {
 	switch o := obj.(type) {
 	case string:
 		return fmt.Sprintf("%#v", obj)
+	case LispSymbol:
+		return o.name
 	case *LispList:
 		return o.String()
 	default:
@@ -92,10 +104,10 @@ func Evalis(list *LispList) LispObj {
 	}
 
 	switch obj := list.First().(type) {
-	case string:
+	case LispSymbol:
 		// Yuck -- specials forms are strings
 		// for now.
-		if obj == "if" {
+		if obj == SYMBOLS["if"] {
 			// ("if" <cond> <if-true> <if-false>)
 			cond := list.Rest().First()
 			body := list.Rest().Rest()
@@ -120,21 +132,22 @@ func Eval(obj LispObj) LispObj {
 }
 
 func main() {
-	empty := NewList()
+	initSymbols()
 
+	empty := NewList()
 	result := Eval(empty)
 	fmt.Printf("eval(empty list) => %s\n", LispObj2String(result))
 
 	list := NewList(1, 2, NewList(3.1, 3.2, 3.3), 4, 5, "six")
 	fmt.Printf("printing out list: %s\n", list.String())
 
-	list = NewList("if", 2, 3, 4)
+	list = NewList(SYMBOLS["if"], 2, 3, 4)
 	result = Eval(list)
 	fmt.Printf("%s expr should eval to 3 => %s\n",
 		list.String(),
 		LispObj2String(result))
 
-	list = NewList("if", NIL, 3, 4)
+	list = NewList(SYMBOLS["if"], NIL, 3, 4)
 	result = Eval(list)
 	fmt.Printf("%s expr should eval to 4 => %s\n",
 		list.String(),
