@@ -148,7 +148,6 @@ loop:
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("got", b)
 		switch b[0] {
 		case ' ', '\t', '\n':
 			reader.Discard(1)
@@ -159,7 +158,6 @@ loop:
 		default:
 			result = append(result, Read(reader))
 		}
-		fmt.Println(result)
 	}
 
 	list := NIL
