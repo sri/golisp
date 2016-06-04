@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
+	"os"
+	"strconv"
 	"strings"
 )
 
 type LispObject interface{}
-
 type LispList struct {
 	first LispObject
 	rest  *LispList
@@ -21,8 +24,8 @@ type LispSymbol struct {
 var SYMBOLS = make(map[string]LispSymbol)
 
 func initSymbols() {
-	SYMBOLS["if"] = LispSymbol{ "if" }
-	SYMBOLS["quote"] = LispSymbol{ "quote" }
+	SYMBOLS["if"] = LispSymbol{"if"}
+	SYMBOLS["quote"] = LispSymbol{"quote"}
 }
 
 func LispObject2String(obj LispObject) string {
@@ -120,9 +123,9 @@ func Evalis(list *LispList) LispObject {
 			return list.Rest().First()
 		}
 	default:
-		return NIL
+		return list
 	}
-	return NIL
+	return list
 }
 
 func Eval(obj LispObject) LispObject {
@@ -131,6 +134,119 @@ func Eval(obj LispObject) LispObject {
 		return Evalis(o)
 	default:
 		return obj
+	}
+}
+
+func ReadList(reader *bufio.Reader) LispObject {
+	result := []LispObject{}
+
+	reader.Discard(1)
+loop:
+	for {
+		// Skip whitespace
+		b, err := reader.Peek(1)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("got", b)
+		switch b[0] {
+		case ' ', '\t', '\n':
+			reader.Discard(1)
+			continue
+		case ')':
+			reader.Discard(1)
+			break loop
+		default:
+			result = append(result, Read(reader))
+		}
+		fmt.Println(result)
+	}
+
+	list := NIL
+	for i := len(result) - 1; i >= 0; i-- {
+		list = Push(result[i], list)
+	}
+	return list
+
+}
+
+func ReadString(reader *bufio.Reader) LispObject {
+	delim, _ := reader.ReadByte()
+	line, err := reader.ReadString(delim)
+	if err != nil {
+		panic(err)
+	}
+	return LispObject(line[:len(line)-1])
+}
+
+func ReadAtom(reader *bufio.Reader) LispObject {
+	result := []byte{}
+
+	for {
+		buf, err := reader.Peek(1)
+		if err != nil {
+			panic(err)
+		}
+		b := buf[0]
+		if b == ' ' || b == '\n' || b == '\t' {
+			reader.Discard(1)
+			break
+		} else if ('0' <= b && b <= '9') ||
+			('a' <= b && b <= 'z') ||
+			('A' <= b && b <= 'Z') ||
+			b == '_' || b == '-' || b == '?' {
+			reader.Discard(1)
+			result = append(result, b)
+		} else {
+			break
+		}
+	}
+
+	s := string(result)
+	if f, err := strconv.ParseFloat(s, 64); err == nil {
+		return LispObject(f)
+	}
+	if i, err := strconv.ParseInt(s, 10, 64); err == nil {
+		return LispObject(i)
+	}
+	return LispSymbol{ s }
+}
+
+func Read(reader *bufio.Reader) LispObject {
+	for {
+		b, err := reader.Peek(1)
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			panic(err)
+		}
+
+		switch b[0] {
+		case ' ', '\n', '\t':
+			// Skip whitespace.
+			reader.Discard(1)
+			continue
+		case '(':
+			return ReadList(reader)
+		case '"':
+			return ReadString(reader)
+		default:
+			return ReadAtom(reader)
+		}
+	}
+
+	return NIL
+}
+
+func Repl() {
+	reader := bufio.NewReader(os.Stdin)
+
+	for {
+		fmt.Print("LISP> ")
+		lispObj := Read(reader)
+		result := Eval(lispObj)
+		fmt.Println(LispObject2String(result))
 	}
 }
 
@@ -155,4 +271,6 @@ func main() {
 	fmt.Printf("%s expr should eval to 4 => %s\n",
 		list.String(),
 		LispObject2String(result))
+
+	Repl()
 }
