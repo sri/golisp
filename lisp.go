@@ -250,25 +250,5 @@ func Repl() {
 
 func main() {
 	initSymbols()
-
-	empty := NewList()
-	result := Eval(empty)
-	fmt.Printf("eval(empty list) => %s\n", LispObject2String(result))
-
-	list := NewList(1, 2, NewList(3.1, 3.2, 3.3), 4, 5, "six")
-	fmt.Printf("printing out list: %s\n", list.String())
-
-	list = NewList(SYMBOLS["if"], 2, 3, 4)
-	result = Eval(list)
-	fmt.Printf("%s expr should eval to 3 => %s\n",
-		list.String(),
-		LispObject2String(result))
-
-	list = NewList(SYMBOLS["if"], NIL, 3, 4)
-	result = Eval(list)
-	fmt.Printf("%s expr should eval to 4 => %s\n",
-		list.String(),
-		LispObject2String(result))
-
 	Repl()
 }
