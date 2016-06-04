@@ -4,6 +4,7 @@ import (
 	"testing"
 	"bufio"
 	"strings"
+	"os"
 )
 
 func readTest(input string) string {
@@ -49,14 +50,14 @@ func TestEvalIfTrue(t *testing.T) {
 }
 
 func TestEvalIfFalse(t *testing.T) {
-	list := NewList(SYMBOLS["if"], nil, 3, 4)
-	// s := list.String()
+	list := NewList(SYMBOLS["if"], NIL, 3, 4)
 	result := LispObject2String(Eval(list))
 	if result != "4" {
-		t.Error("eval if false: doesn't eval to 4", list.String())
+		t.Error("eval if false: doesn't eval to 4", list.String(), "=>", result)
 	}
 }
 
-func TestMain(t *testing.M) {
+func TestMain(m *testing.M) {
 	initSymbols()
+	os.Exit(m.Run())
 }
