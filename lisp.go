@@ -206,7 +206,7 @@ func ReadAtom(reader *bufio.Reader) LispObject {
 	if i, err := strconv.ParseInt(s, 10, 64); err == nil {
 		return LispObject(i)
 	}
-	return LispSymbol{ s }
+	return LispSymbol{s}
 }
 
 func Read(reader *bufio.Reader) LispObject {
