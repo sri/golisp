@@ -58,6 +58,6 @@ func TestEvalIfFalse(t *testing.T) {
 }
 
 func TestMain(m *testing.M) {
-	initSymbols()
+	InitSymbols()
 	os.Exit(m.Run())
 }

@@ -23,7 +23,7 @@ type LispSymbol struct {
 
 var SYMBOLS = make(map[string]LispSymbol)
 
-func initSymbols() {
+func InitSymbols() {
 	SYMBOLS["if"] = LispSymbol{"if"}
 	SYMBOLS["quote"] = LispSymbol{"quote"}
 }
@@ -258,6 +258,6 @@ func Repl() {
 }
 
 func main() {
-	initSymbols()
+	InitSymbols()
 	Repl()
 }
