@@ -176,6 +176,17 @@ func ReadString(reader *bufio.Reader) LispObject {
 	return LispObject(line[:len(line)-1])
 }
 
+func IsValidIdentifier(b byte) bool {
+	if ('0' <= b && b <= '9') ||
+		('a' <= b && b <= 'z') ||
+		('A' <= b && b <= 'Z') ||
+		b == '_' || b == '-' ||
+		b == '?' || b == '%' {
+		return true
+	}
+	return false
+}
+
 func ReadAtom(reader *bufio.Reader) LispObject {
 	result := []byte{}
 
@@ -188,14 +199,13 @@ func ReadAtom(reader *bufio.Reader) LispObject {
 		if b == ' ' || b == '\n' || b == '\t' {
 			reader.Discard(1)
 			break
-		} else if ('0' <= b && b <= '9') ||
-			('a' <= b && b <= 'z') ||
-			('A' <= b && b <= 'Z') ||
-			b == '_' || b == '-' || b == '?' {
+		} else if IsValidIdentifier(b) {
 			reader.Discard(1)
 			result = append(result, b)
-		} else {
+		} else if b == '(' || b == ')' {
 			break
+		} else {
+			panic("invalid char: " + string(b))
 		}
 	}
 
