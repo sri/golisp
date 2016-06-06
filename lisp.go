@@ -210,6 +210,9 @@ func ReadAtom(reader *bufio.Reader) LispObject {
 	}
 
 	s := string(result)
+	if s == "nil" {
+		return NIL
+	}
 	if f, err := strconv.ParseFloat(s, 64); err == nil {
 		return LispObject(f)
 	}
