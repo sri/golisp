@@ -219,6 +219,12 @@ func ReadAtom(reader *bufio.Reader) LispObject {
 	return LispSymbol{s}
 }
 
+func ReadQuote(reader *bufio.Reader) LispObject {
+	reader.Discard(1)
+	fmt.Println("in ReadQuote")
+	return NewList(SYMBOLS["quote"], Read(reader))
+}
+
 func Read(reader *bufio.Reader) LispObject {
 	for {
 		b, err := reader.Peek(1)
@@ -238,6 +244,8 @@ func Read(reader *bufio.Reader) LispObject {
 			return ReadList(reader)
 		case '"':
 			return ReadString(reader)
+		case '\'':
+			return ReadQuote(reader)
 		default:
 			return ReadAtom(reader)
 		}
