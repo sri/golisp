@@ -123,9 +123,12 @@ func Evalis(list *LispList) LispObject {
 			return list.Rest().First()
 		}
 	default:
-		return list
+		panic("do not know how to evaluate " + LispObject2String(list))
+		return NIL
 	}
-	return list
+
+	panic("do not know how to evaluate " + LispObject2String(list))
+	return NIL
 }
 
 func Eval(obj LispObject) LispObject {
