@@ -143,7 +143,6 @@ func ReadList(reader *bufio.Reader) LispObject {
 	reader.Discard(1)
 loop:
 	for {
-		// Skip whitespace
 		b, err := reader.Peek(1)
 		if err != nil {
 			panic(err)
