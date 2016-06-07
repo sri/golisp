@@ -75,6 +75,14 @@ func TestEvalReadIfFalseExpr(t *testing.T) {
 	}
 }
 
+func TestQuote(t *testing.T) {
+	reader := bufio.NewReader(strings.NewReader("'(if 10 20 30)"))
+	result := Eval(Read(reader), new(LispEnv))
+	s := LispObject2String(result)
+	if s != "(if 10 20 30)" {
+		t.Error("test quote:", s)
+	}
+}
 func TestMain(m *testing.M) {
 	InitSymbols()
 	os.Exit(m.Run())
