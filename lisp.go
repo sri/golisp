@@ -15,9 +15,23 @@ type LispList struct {
 	rest  *LispList
 }
 
+type LispGoFn func(*LispList) LispObject
+
 type LispEnv struct {
 	current map[LispSymbol]LispObject
 	parent  *LispEnv
+}
+
+func (env *LispEnv) Print() {
+	for k, v := range env.current {
+		fmt.Printf(" %s => %s\n", LispObject2String(k), LispObject2String(v))
+	}
+	fmt.Println("===")
+	if env.parent == nil {
+		fmt.Println("(parent is NIL)")
+	} else {
+		env.parent.Print()
+	}
 }
 
 func MakeEnv(env *LispEnv, args *LispList, vals *LispList) *LispEnv {
@@ -32,7 +46,9 @@ func MakeEnv(env *LispEnv, args *LispList, vals *LispList) *LispEnv {
 		if args == NIL && vals == NIL {
 			break
 		} else if args == NIL || vals == NIL {
-			panic("excess params: args=" + LispObject2String(args) + ", vals=" + LispObject2String(vals))
+			panic("excess params: args=" +
+				LispObject2String(args) +
+				", vals=" + LispObject2String(vals))
 		}
 
 		switch arg := args.First().(type) {
@@ -155,10 +171,14 @@ func Apply(obj LispObject, actualArgs *LispList, env *LispEnv) LispObject {
 				LispObject2String(obj))
 
 		}
+	case LispGoFn:
+		return fn(actualArgs)
 	default:
 		panic("currently only lambdas are supported")
 
 	}
+
+	return NIL
 }
 
 func EvalList(list *LispList, env *LispEnv) LispObject {
@@ -185,20 +205,34 @@ func EvalList(list *LispList, env *LispEnv) LispObject {
 			// Lambdas evaluate to themselves
 			return list
 		}
-	default:
-		fn := Eval(obj, env)
-		return Apply(fn, list.Rest(), env)
 	}
 
-	panic("do not know how to evaluate " + LispObject2String(list))
-	return NIL
+	fn := Eval(list.First(), env)
+	result := []LispObject{}
+	for args := list.Rest(); args != NIL; args = args.Rest() {
+		result = append(result, Eval(args.First(), env))
+	}
+	args := NIL
+	for i := len(result) - 1; i >= 0; i-- {
+		args = Push(result[i], args)
+	}
+	return Apply(fn, args, env)
 }
 
 func EvalSymbol(sym LispSymbol, env *LispEnv) LispObject {
-	if val, ok := env.current[sym]; ok {
-		return val
+	for {
+		if env == nil {
+			break
+		}
+		if val, ok := env.current[sym]; ok {
+			return val
+		}
+		env = env.parent
 	}
-	panic("unidentified symbol: " + sym.name)
+
+	fmt.Println("unidentified symbol", sym.name)
+	env.Print()
+	os.Exit(1)
 	return NIL
 }
 
@@ -281,7 +315,8 @@ func ReadAtom(reader *bufio.Reader) LispObject {
 		} else if b == '(' || b == ')' {
 			break
 		} else {
-			panic("invalid char: " + string(b))
+			reader.Discard(1)
+			result = append(result, b)
 		}
 	}
 
@@ -334,9 +369,44 @@ func Read(reader *bufio.Reader) LispObject {
 	return NIL
 }
 
+func GlobalEnv() *LispEnv {
+	env := new(LispEnv)
+	env.current = make(map[LispSymbol]LispObject)
+	env.current[LispSymbol{"+"}] = LispGoFn(LispFn_Add)
+	return env
+}
+
+func LispFn_Add(args *LispList) LispObject {
+	sum := float64(0)
+	for {
+		if args == NIL {
+			break
+		}
+		switch n := args.First().(type) {
+		case float64:
+			sum += n
+		case int64:
+			sum += float64(n)
+		default:
+			panic("Invalid arg to +: " + LispObject2String(n))
+		}
+		args = args.Rest()
+	}
+
+	return LispObject(sum)
+}
+
+func LispFn_Print(args ...LispObject) {
+	output := []string{}
+	for i := 0; i < len(args); i++ {
+		output = append(output, LispObject2String(args[i]))
+	}
+	fmt.Println(output)
+}
+
 func Repl() {
 	reader := bufio.NewReader(os.Stdin)
-	env := new(LispEnv)
+	env := GlobalEnv()
 
 	for {
 		fmt.Print("LISP> ")

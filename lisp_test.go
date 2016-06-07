@@ -83,6 +83,16 @@ func TestQuote(t *testing.T) {
 		t.Error("test quote:", s)
 	}
 }
+
+func TestLambda(t *testing.T) {
+	reader := bufio.NewReader(strings.NewReader("((lambda (a b c) (+ a b c)) 1 2 3)"))
+	result := Eval(Read(reader), GlobalEnv())
+	s := LispObject2String(result)
+	if s != "6" {
+		t.Error("test lambda")
+	}
+}
+
 func TestMain(m *testing.M) {
 	InitSymbols()
 	os.Exit(m.Run())
