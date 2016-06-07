@@ -7,89 +7,64 @@ import (
 	"testing"
 )
 
-func readTest(input string) string {
-	reader := bufio.NewReader(strings.NewReader(input))
-	return LispObject2String(Read(reader))
+type TestExpectation struct {
+	arg, expected string
 }
 
-func TestReadList(t *testing.T) {
-	result := readTest("   (  1 2     3   )")
-	if result != "(1 2 3)" {
-		t.Errorf("%s != (1 2 3)", result)
+func TestRead(t *testing.T) {
+	expectations := []TestExpectation{
+		{"\n\t", "nil"},
+		{"\"hello world\"", "\"hello world\""},
+		{"()", "nil"}, // empty list
+		{"1", "1"},
+		{"'(1 2 3)", "(quote (1 2 3))"},
+		// {"'   \r\n(1     2    3  )", "(1 2 3)"},
+		{"(1 2 (3.1 3.2 3.3) 4 5 \"six\")", "(1 2 (3.1 3.2 3.3) 4 5 \"six\")"},
+		{"1.34", "1.34"},
+		{"(if 10 20 30)", "(if 10 20 30)"},
 	}
-}
 
-func TestReadString(t *testing.T) {
-	result := readTest("\"hello world\"")
-	if result != "\"hello world\"" {
-		t.Errorf("test read string: %s != \"hello world\"", result)
+	for _, exp := range expectations {
+		reader := bufio.NewReader(strings.NewReader(exp.arg))
+		result := Read(reader)
+		actual := LispObject2String(result)
+		if actual != exp.expected {
+			t.Errorf("TestRead: Expected (eval %v) => %s, but got %s",
+				exp.arg, exp.expected, actual)
+		}
+
 	}
+
 }
 
-func TestEvalEmptyList(t *testing.T) {
-	result := LispObject2String(Eval(NewList(), new(LispEnv)))
-	if result != "nil" {
-		t.Errorf("eval empty list: %v != nil", result)
+func TestEval(t *testing.T) {
+	expectations := []TestExpectation{
+		{"nil", "nil"},
+		{"()", "nil"},
+		// If
+		{"(if 10 20 30)", "20"},                // if true
+		{"(if nil 20 30)", "30"},               // if false
+		{"(if (if 10 nil 20) 400 500)", "500"}, // cond expr return nil
+		{"(if (if 10 20 20) 400 500)", "400"},  // cond expr return true
+
+		// Quote
+		{"'(if 10 20 30)", "(if 10 20 30)"},
+
+		// Lambda
+		{"((lambda (a b c) (+ a b c)) 1 2 3)", "6"},
+		// Hiding variable
+		{"((if 1 (lambda (a) (+ a 2)) (lambda (a) (+ a 100))) 100)", "102"},
 	}
-}
 
-func TestListToString(t *testing.T) {
-	list := NewList(1, 2, NewList(3.1, 3.2, 3.3), 4, 5, "six")
-	result := list.String()
-	if result != "(1 2 (3.1 3.2 3.3) 4 5 \"six\")" {
-		t.Errorf("list to string: %v != (1 2 (3.1 3.2 3.3) 4 5 \"six\")", result)
-	}
-}
+	for _, exp := range expectations {
+		reader := bufio.NewReader(strings.NewReader(exp.arg))
+		result := Eval(Read(reader), GlobalEnv())
+		actual := LispObject2String(result)
+		if actual != exp.expected {
+			t.Errorf("Test Eval: Expected (eval %s) => %s, but got %s",
+				exp.arg, exp.expected, actual)
+		}
 
-func TestEvalIfTrue(t *testing.T) {
-	list := NewList(SYMBOLS["if"], 2, 3, 4)
-	result := LispObject2String(Eval(list, new(LispEnv)))
-	if result != "3" {
-		t.Error("eval if true: doesn't eval to 3", list.String())
-	}
-}
-
-func TestEvalIfFalse(t *testing.T) {
-	list := NewList(SYMBOLS["if"], NIL, 3, 4)
-	result := LispObject2String(Eval(list, new(LispEnv)))
-	if result != "4" {
-		t.Error("eval if false: doesn't eval to 4", list.String(), "=>", result)
-	}
-}
-
-func TestEvalReadIfTrueExpr(t *testing.T) {
-	reader := bufio.NewReader(strings.NewReader("(if (if 10 20 20) 400 500)"))
-	result := Eval(Read(reader), new(LispEnv))
-	s := LispObject2String(result)
-	if s != "400" {
-		t.Error("test eval read if true expr: doesn't eval to 400", "evals to =>", s)
-	}
-}
-
-func TestEvalReadIfFalseExpr(t *testing.T) {
-	reader := bufio.NewReader(strings.NewReader("(if (if 10 nil 20) 400 500)"))
-	result := Eval(Read(reader), new(LispEnv))
-	s := LispObject2String(result)
-	if s != "500" {
-		t.Error("test eval read if false expr: doesn't eval to 400", "evals to =>", s)
-	}
-}
-
-func TestQuote(t *testing.T) {
-	reader := bufio.NewReader(strings.NewReader("'(if 10 20 30)"))
-	result := Eval(Read(reader), new(LispEnv))
-	s := LispObject2String(result)
-	if s != "(if 10 20 30)" {
-		t.Error("test quote:", s)
-	}
-}
-
-func TestLambda(t *testing.T) {
-	reader := bufio.NewReader(strings.NewReader("((lambda (a b c) (+ a b c)) 1 2 3)"))
-	result := Eval(Read(reader), GlobalEnv())
-	s := LispObject2String(result)
-	if s != "6" {
-		t.Error("test lambda")
 	}
 }
 

@@ -303,6 +303,9 @@ func ReadAtom(reader *bufio.Reader) LispObject {
 	for {
 		buf, err := reader.Peek(1)
 		if err != nil {
+			if err == io.EOF {
+				break
+			}
 			panic(err)
 		}
 		b := buf[0]
