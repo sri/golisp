@@ -1,10 +1,10 @@
 package main
 
 import (
-	"testing"
 	"bufio"
-	"strings"
 	"os"
+	"strings"
+	"testing"
 )
 
 func readTest(input string) string {
@@ -27,7 +27,7 @@ func TestReadString(t *testing.T) {
 }
 
 func TestEvalEmptyList(t *testing.T) {
-	result := LispObject2String(Eval(NewList()))
+	result := LispObject2String(Eval(NewList(), new(LispEnv)))
 	if result != "nil" {
 		t.Errorf("eval empty list: %v != nil", result)
 	}
@@ -43,7 +43,7 @@ func TestListToString(t *testing.T) {
 
 func TestEvalIfTrue(t *testing.T) {
 	list := NewList(SYMBOLS["if"], 2, 3, 4)
-	result := LispObject2String(Eval(list))
+	result := LispObject2String(Eval(list, new(LispEnv)))
 	if result != "3" {
 		t.Error("eval if true: doesn't eval to 3", list.String())
 	}
@@ -51,7 +51,7 @@ func TestEvalIfTrue(t *testing.T) {
 
 func TestEvalIfFalse(t *testing.T) {
 	list := NewList(SYMBOLS["if"], NIL, 3, 4)
-	result := LispObject2String(Eval(list))
+	result := LispObject2String(Eval(list, new(LispEnv)))
 	if result != "4" {
 		t.Error("eval if false: doesn't eval to 4", list.String(), "=>", result)
 	}
@@ -59,7 +59,7 @@ func TestEvalIfFalse(t *testing.T) {
 
 func TestEvalReadIfTrueExpr(t *testing.T) {
 	reader := bufio.NewReader(strings.NewReader("(if (if 10 20 20) 400 500)"))
-	result := Eval(Read(reader))
+	result := Eval(Read(reader), new(LispEnv))
 	s := LispObject2String(result)
 	if s != "400" {
 		t.Error("test eval read if true expr: doesn't eval to 400", "evals to =>", s)
@@ -68,13 +68,12 @@ func TestEvalReadIfTrueExpr(t *testing.T) {
 
 func TestEvalReadIfFalseExpr(t *testing.T) {
 	reader := bufio.NewReader(strings.NewReader("(if (if 10 nil 20) 400 500)"))
-	result := Eval(Read(reader))
+	result := Eval(Read(reader), new(LispEnv))
 	s := LispObject2String(result)
 	if s != "500" {
 		t.Error("test eval read if false expr: doesn't eval to 400", "evals to =>", s)
 	}
 }
-
 
 func TestMain(m *testing.M) {
 	InitSymbols()

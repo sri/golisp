@@ -15,6 +15,42 @@ type LispList struct {
 	rest  *LispList
 }
 
+type LispEnv struct {
+	current map[LispSymbol]LispObject
+	parent  *LispEnv
+}
+
+func MakeEnv(env *LispEnv, args *LispList, vals *LispList) *LispEnv {
+	newEnv := new(LispEnv)
+	newEnv.current = make(map[LispSymbol]LispObject)
+
+	if env != nil {
+		newEnv.parent = env
+	}
+
+	for {
+		if args == NIL && vals == NIL {
+			break
+		} else if args == NIL || vals == NIL {
+			panic("excess params: args=" + LispObject2String(args) + ", vals=" + LispObject2String(vals))
+		}
+
+		switch arg := args.First().(type) {
+		case LispSymbol:
+			newEnv.current[arg] = Eval(vals.First(), env)
+			break
+		default:
+			panic("Invalid obj, must be a symbol: " + LispObject2String(arg))
+
+		}
+
+		args = args.Rest()
+		vals = vals.Rest()
+	}
+
+	return newEnv
+}
+
 var NIL *LispList = new(LispList)
 
 type LispSymbol struct {
@@ -26,6 +62,7 @@ var SYMBOLS = make(map[string]LispSymbol)
 func InitSymbols() {
 	SYMBOLS["if"] = LispSymbol{"if"}
 	SYMBOLS["quote"] = LispSymbol{"quote"}
+	SYMBOLS["lambda"] = LispSymbol{"lambda"}
 }
 
 func LispObject2String(obj LispObject) string {
@@ -102,7 +139,29 @@ func NewList(args ...LispObject) *LispList {
 	return result
 }
 
-func Evalis(list *LispList) LispObject {
+func Apply(obj LispObject, actualArgs *LispList, env *LispEnv) LispObject {
+	switch fn := obj.(type) {
+	case *LispList:
+		if fn.First() != SYMBOLS["lambda"] {
+			panic("lambdas only for now")
+		}
+		switch fnArgs := fn.Rest().First().(type) {
+		case *LispList:
+			fnBody := fn.Rest().Rest().First()
+			newEnv := MakeEnv(env, fnArgs, actualArgs)
+			return Eval(fnBody, newEnv)
+		default:
+			panic("function params need to be a list: " +
+				LispObject2String(obj))
+
+		}
+	default:
+		panic("currently only lambdas are supported")
+
+	}
+}
+
+func EvalList(list *LispList, env *LispEnv) LispObject {
 	if list == NIL {
 		return NIL
 	}
@@ -113,28 +172,42 @@ func Evalis(list *LispList) LispObject {
 			// (if <cond> <if-true> <if-false>)
 			cond := list.Rest().First()
 			body := list.Rest().Rest()
-			if IsTrue(Eval(cond)) {
-				return Eval(body.First())
+			if IsTrue(Eval(cond, env)) {
+				return Eval(body.First(), env)
 			}
-			return Eval(body.Rest().First())
+			return Eval(body.Rest().First(), env)
 		} else if obj == SYMBOLS["quote"] {
 			// (quote (a b c)) => (a b c)
 			// (quote z) => z
 			return list.Rest().First()
+		} else if obj == SYMBOLS["lambda"] {
+			// (lambda (a b c) (+ a b c))
+			// Lambdas evaluate to themselves
+			return list
 		}
 	default:
-		panic("do not know how to evaluate " + LispObject2String(list))
-		return NIL
+		fn := Eval(obj, env)
+		return Apply(fn, list.Rest(), env)
 	}
 
 	panic("do not know how to evaluate " + LispObject2String(list))
 	return NIL
 }
 
-func Eval(obj LispObject) LispObject {
+func EvalSymbol(sym LispSymbol, env *LispEnv) LispObject {
+	if val, ok := env.current[sym]; ok {
+		return val
+	}
+	panic("unidentified symbol: " + sym.name)
+	return NIL
+}
+
+func Eval(obj LispObject, env *LispEnv) LispObject {
 	switch o := obj.(type) {
 	case *LispList:
-		return Evalis(o)
+		return EvalList(o, env)
+	case LispSymbol:
+		return EvalSymbol(o, env)
 	default:
 		return obj
 	}
@@ -215,6 +288,8 @@ func ReadAtom(reader *bufio.Reader) LispObject {
 	s := string(result)
 	if s == "nil" {
 		return NIL
+	} else if val, ok := SYMBOLS[s]; ok {
+		return val
 	}
 	if f, err := strconv.ParseFloat(s, 64); err == nil {
 		return LispObject(f)
@@ -227,7 +302,6 @@ func ReadAtom(reader *bufio.Reader) LispObject {
 
 func ReadQuote(reader *bufio.Reader) LispObject {
 	reader.Discard(1)
-	fmt.Println("in ReadQuote")
 	return NewList(SYMBOLS["quote"], Read(reader))
 }
 
@@ -262,11 +336,12 @@ func Read(reader *bufio.Reader) LispObject {
 
 func Repl() {
 	reader := bufio.NewReader(os.Stdin)
+	env := new(LispEnv)
 
 	for {
 		fmt.Print("LISP> ")
 		lispObj := Read(reader)
-		result := Eval(lispObj)
+		result := Eval(lispObj, env)
 		fmt.Println(LispObject2String(result))
 	}
 }
