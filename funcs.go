@@ -26,10 +26,15 @@ func LispFn_Add(args *LispList) LispObject {
 	return LispObject(sum)
 }
 
-func LispFn_Print(args ...LispObject) {
-	output := []string{}
-	for i := 0; i < len(args); i++ {
-		output = append(output, LispObject2String(args[i]))
+// TODO: fix bug with string: prints out with quotes
+func LispFn_Print(args *LispList) LispObject {
+	for {
+		if (args == NIL) {
+			break
+		}
+		fmt.Printf("%s ", LispObject2String(args.First()))
+		args = args.Rest()
 	}
-	fmt.Println(output)
+	fmt.Println()
+	return NIL
 }
