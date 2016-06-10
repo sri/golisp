@@ -26,7 +26,7 @@ func Apply(obj LispObject, actualArgs *LispList, env *LispEnv) LispObject {
 				macroBody, expansion)
 			return Eval(expansion, env)
 		} else {
-			panic("Nope")
+			panic("Unknown obj: " + LispObject2String(obj))
 		}
 	case LispGoFn:
 		return fn(actualArgs)
@@ -100,6 +100,7 @@ func EvalSymbol(sym LispSymbol, env *LispEnv) LispObject {
 		env = env.parent
 	}
 
+	fmt.Println("unidentified symbol", sym.name)
 	env.Print()
 	os.Exit(1)
 	return NIL
