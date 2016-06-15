@@ -18,7 +18,7 @@ func LispFn_Add(args *LispList) LispObject {
 		case int64:
 			sum += float64(n)
 		default:
-			panic("Invalid arg to +: " + LispObject2String(n))
+			LispError("Invalid arg to +: " + LispObject2String(n))
 		}
 		args = args.Rest()
 	}

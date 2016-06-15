@@ -33,7 +33,7 @@ func MakeEnv(env *LispEnv, args *LispList, vals *LispList) *LispEnv {
 		if args == NIL && vals == NIL {
 			break
 		} else if args == NIL || vals == NIL {
-			panic("excess params: args=" +
+			LispError("excess params: args=" +
 				LispObject2String(args) +
 				", vals=" + LispObject2String(vals))
 		}
@@ -43,7 +43,7 @@ func MakeEnv(env *LispEnv, args *LispList, vals *LispList) *LispEnv {
 			newEnv.current[arg] = Eval(vals.First(), env)
 			break
 		default:
-			panic("Invalid obj, must be a symbol: " + LispObject2String(arg))
+			LispError("Invalid obj, must be a symbol: " + LispObject2String(arg))
 
 		}
 

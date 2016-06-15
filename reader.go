@@ -14,7 +14,7 @@ loop:
 	for {
 		b, err := reader.Peek(1)
 		if err != nil {
-			panic(err)
+			LispError(err)
 		}
 		switch b[0] {
 		case ' ', '\t', '\n':
@@ -40,7 +40,7 @@ func ReadString(reader *bufio.Reader) LispObject {
 	delim, _ := reader.ReadByte()
 	line, err := reader.ReadString(delim)
 	if err != nil {
-		panic(err)
+		LispError(err)
 	}
 	return LispObject(line[:len(line)-1])
 }
@@ -65,7 +65,7 @@ func ReadAtom(reader *bufio.Reader) LispObject {
 			if err == io.EOF {
 				break
 			}
-			panic(err)
+			LispError(err)
 		}
 		b := buf[0]
 		if b == ' ' || b == '\n' || b == '\t' {
@@ -109,7 +109,7 @@ func Read(reader *bufio.Reader) LispObject {
 			if err == io.EOF {
 				break
 			}
-			panic(err)
+			LispError(err)
 		}
 
 		switch b[0] {

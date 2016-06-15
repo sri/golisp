@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
 
 // Convert
@@ -43,7 +42,7 @@ func Apply(obj LispObject, actualArgs *LispList, env *LispEnv) LispObject {
 				newEnv := MakeEnv(env, fnArgs, actualArgs)
 				return Eval(fnBody, newEnv)
 			default:
-				panic("function params need to be a list: " +
+				LispError("function params need to be a list: " +
 					LispObject2String(obj))
 			}
 		} else if head == SYMBOLS["macro"] {
@@ -53,12 +52,12 @@ func Apply(obj LispObject, actualArgs *LispList, env *LispEnv) LispObject {
 				macroBody, expansion)
 			return Eval(expansion, env)
 		} else {
-			panic("Unknown obj: " + LispObject2String(obj))
+			LispError("Unknown obj: " + LispObject2String(obj))
 		}
 	case LispGoFn:
 		return fn(actualArgs)
 	default:
-		panic("currently only lambdas are supported")
+		LispError("currently only lambdas are supported")
 
 	}
 
@@ -129,9 +128,7 @@ func EvalSymbol(sym LispSymbol, env *LispEnv) LispObject {
 		env = env.parent
 	}
 
-	fmt.Println("unidentified symbol", sym.name)
-	env.Print()
-	os.Exit(1)
+	LispError("unidentified symbol" + sym.name)
 	return NIL
 }
 
