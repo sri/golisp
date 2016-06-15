@@ -21,6 +21,9 @@ func TestEval(t *testing.T) {
 
 		// Lambda
 		{"((lambda (a b c) (+ a b c)) 1 2 3)", "6"},
+		// Let
+		{"(let (a 10 b 20) (+ a b))", "30"},
+
 		// Hiding variable
 		{"((if 1 (lambda (a) (+ a 2)) (lambda (a) (+ a 100))) 100)", "102"},
 	}

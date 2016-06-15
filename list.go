@@ -56,6 +56,22 @@ func Push(first LispObject, rest *LispList) *LispList {
 	return result
 }
 
+func ReverseList(list *LispList) *LispList {
+	ary := []LispObject{}
+	for {
+		if list == NIL {
+			break
+		}
+		ary = append(ary, list.First())
+		list = list.Rest()
+	}
+	result := NIL
+	for i := 0; i < len(ary); i++ {
+		result = Push(ary[i], result)
+	}
+	return result
+}
+
 func NewList(args ...LispObject) *LispList {
 	result := NIL
 	for i := len(args) - 1; i >= 0; i-- {

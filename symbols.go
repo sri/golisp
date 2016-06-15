@@ -11,4 +11,5 @@ func InitSymbols() {
 	SYMBOLS["quote"] = LispSymbol{"quote"}
 	SYMBOLS["lambda"] = LispSymbol{"lambda"}
 	SYMBOLS["macro"] = LispSymbol{"macro"}
+	SYMBOLS["let"] = LispSymbol{"let"}
 }

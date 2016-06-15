@@ -5,6 +5,33 @@ import (
 	"os"
 )
 
+// Convert
+// (let (a 10 b 20 c 30) ...) =>
+// ((lambda (a b c) ...) 10 20 30)
+func Let2Lambda(let *LispList, env *LispEnv) *LispList {
+	lambdaArgs := NIL
+	actualArgs := NIL
+	body := let.Rest().Rest().First().(*LispList)
+
+	letExpr := let.Rest().First().(*LispList)
+	for {
+		if letExpr == NIL {
+			break
+		}
+
+		lambdaArgs = Push(letExpr.First(), lambdaArgs)
+		actualArgs = Push(letExpr.Rest().First(), actualArgs)
+
+		letExpr = letExpr.Rest().Rest()
+	}
+
+	lambdaArgs = ReverseList(lambdaArgs)
+	actualArgs = ReverseList(actualArgs)
+
+	result := Push(NewList(SYMBOLS["lambda"], lambdaArgs, body), actualArgs)
+	return result
+}
+
 func Apply(obj LispObject, actualArgs *LispList, env *LispEnv) LispObject {
 	switch fn := obj.(type) {
 	case *LispList:
@@ -61,6 +88,8 @@ func EvalList(list *LispList, env *LispEnv) LispObject {
 			// (lambda (a b c) (+ a b c))
 			// Lambdas evaluate to themselves
 			return list
+		} else if obj == SYMBOLS["let"] {
+			return Eval(Let2Lambda(list, env), env)
 		} else if obj == SYMBOLS["macro"] {
 			// simple macros:
 			// (macro <name> (<macro-args>) <expansion> <body...>)
