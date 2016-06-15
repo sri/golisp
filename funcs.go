@@ -29,7 +29,7 @@ func LispFn_Add(args *LispList) LispObject {
 // TODO: fix bug with string: prints out with quotes
 func LispFn_Print(args *LispList) LispObject {
 	for {
-		if (args == NIL) {
+		if args == NIL {
 			break
 		}
 		fmt.Printf("%s ", LispObject2String(args.First()))
