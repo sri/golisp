@@ -7,9 +7,15 @@ type LispSymbol struct {
 var SYMBOLS = make(map[string]LispSymbol)
 
 func InitSymbols() {
-	SYMBOLS["if"] = LispSymbol{"if"}
-	SYMBOLS["quote"] = LispSymbol{"quote"}
-	SYMBOLS["lambda"] = LispSymbol{"lambda"}
-	SYMBOLS["macro"] = LispSymbol{"macro"}
-	SYMBOLS["let"] = LispSymbol{"let"}
+	syms := []string{
+		"if",
+		"lambda",
+		"let",
+		"macro",
+		"quote",
+	}
+
+	for _, sym := range syms {
+		SYMBOLS[sym] = LispSymbol{sym}
+	}
 }
