@@ -10,16 +10,16 @@ import (
 func Let2Lambda(let *LispList, env *LispEnv) *LispList {
 	lambdaArgs := NIL
 	actualArgs := NIL
-	body := let.Rest().Rest().First().(*LispList)
+	body := let.Third().(*LispList)
 
-	letExpr := let.Rest().First().(*LispList)
+	letExpr := let.Second().(*LispList)
 	for {
 		if letExpr == NIL {
 			break
 		}
 
 		lambdaArgs = Push(letExpr.First(), lambdaArgs)
-		actualArgs = Push(letExpr.Rest().First(), actualArgs)
+		actualArgs = Push(letExpr.Second(), actualArgs)
 
 		letExpr = letExpr.Rest().Rest()
 	}
@@ -36,9 +36,9 @@ func Apply(obj LispObject, actualArgs *LispList, env *LispEnv) LispObject {
 	case *LispList:
 		head := fn.First()
 		if head == SYMBOLS["lambda"] {
-			switch fnArgs := fn.Rest().First().(type) {
+			switch fnArgs := fn.Second().(type) {
 			case *LispList:
-				fnBody := fn.Rest().Rest().First()
+				fnBody := fn.Third()
 				newEnv := MakeEnv(env, fnArgs, actualArgs)
 				return Eval(fnBody, newEnv)
 			default:
@@ -46,7 +46,7 @@ func Apply(obj LispObject, actualArgs *LispList, env *LispEnv) LispObject {
 					LispObject2String(obj))
 			}
 		} else if head == SYMBOLS["macro"] {
-			macroBody := fn.Rest().Rest().First().(*LispList)
+			macroBody := fn.Third().(*LispList)
 			expansion := Eval(macroBody, env)
 			fmt.Printf("MACRO EXPANSION: %s => %s\n",
 				macroBody, expansion)
@@ -73,16 +73,16 @@ func EvalList(list *LispList, env *LispEnv) LispObject {
 	case LispSymbol:
 		if obj == SYMBOLS["if"] {
 			// (if <cond> <if-true> <if-false>)
-			cond := list.Rest().First()
+			cond := list.Second()
 			body := list.Rest().Rest()
 			if IsTrue(Eval(cond, env)) {
 				return Eval(body.First(), env)
 			}
-			return Eval(body.Rest().First(), env)
+			return Eval(body.Second(), env)
 		} else if obj == SYMBOLS["quote"] {
 			// (quote (a b c)) => (a b c)
 			// (quote z) => z
-			return list.Rest().First()
+			return list.Second()
 		} else if obj == SYMBOLS["lambda"] {
 			// (lambda (a b c) (+ a b c))
 			// Lambdas evaluate to themselves
@@ -93,10 +93,10 @@ func EvalList(list *LispList, env *LispEnv) LispObject {
 			// simple macros:
 			// (macro <name> (<macro-args>) <expansion> <body...>)
 			// The macro gets transformed into a macro function.
-			name := list.Rest().First().(LispSymbol)
-			macroArgs := list.Rest().Rest().First().(*LispList)
-			expansion := list.Rest().Rest().Rest().First().(*LispList)
-			body := list.Rest().Rest().Rest().Rest().First().(*LispList)
+			name := list.Second().(LispSymbol)
+			macroArgs := list.Third().(*LispList)
+			expansion := list.Nth(4).(*LispList)
+			body := list.Nth(5).(*LispList)
 
 			macroFn := NewList(SYMBOLS["macro"], macroArgs, expansion)
 			newEnv := MakeEnv(env, NewList(name), NewList(NewList(SYMBOLS["quote"], macroFn)))

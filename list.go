@@ -19,6 +19,29 @@ func (list *LispList) First() LispObject {
 	return list.first
 }
 
+func (list *LispList) Second() LispObject {
+	return list.Rest().First()
+}
+
+func (list *LispList) Third() LispObject {
+	return list.Rest().Rest().First()
+}
+
+// Note: Nth(1) == First() & Nth(2) == Second()
+func (list *LispList) Nth(n int) LispObject {
+	l := list
+	for {
+		if n <= 0 {
+			return NIL
+		} else if n == 1 {
+			return l.First()
+		}
+		l = l.Rest()
+		n--
+	}
+	return NIL
+}
+
 func (list *LispList) Rest() *LispList {
 	if list == NIL {
 		return NIL
