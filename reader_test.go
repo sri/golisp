@@ -21,7 +21,7 @@ func TestReader(t *testing.T) {
 
 	for _, exp := range expectations {
 		reader := bufio.NewReader(strings.NewReader(exp.arg))
-		result := Read(reader)
+		result, _ := Read(reader)
 		actual := LispObject2String(result)
 		if actual != exp.expected {
 			t.Errorf("TestRead: Expected (eval %v) => %s, but got %s",

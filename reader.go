@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"io"
 	"strconv"
 )
 
@@ -14,7 +13,7 @@ loop:
 	for {
 		b, err := reader.Peek(1)
 		if err != nil {
-			LispError(err)
+			break
 		}
 		switch b[0] {
 		case ' ', '\t', '\n':
@@ -24,7 +23,11 @@ loop:
 			reader.Discard(1)
 			break loop
 		default:
-			result = append(result, Read(reader))
+			lispObj, err := Read(reader)
+			if err != nil {
+				LispError(err)
+			}
+			result = append(result, lispObj)
 		}
 	}
 
@@ -33,7 +36,6 @@ loop:
 		list = Push(result[i], list)
 	}
 	return list
-
 }
 
 func ReadString(reader *bufio.Reader) LispObject {
@@ -62,10 +64,7 @@ func ReadAtom(reader *bufio.Reader) LispObject {
 	for {
 		buf, err := reader.Peek(1)
 		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			LispError(err)
+			break
 		}
 		b := buf[0]
 		if b == ' ' || b == '\n' || b == '\t' {
@@ -80,6 +79,10 @@ func ReadAtom(reader *bufio.Reader) LispObject {
 			reader.Discard(1)
 			result = append(result, b)
 		}
+	}
+
+	if len(result) == 0 {
+		LispError("Invalid read in ReadAtom")
 	}
 
 	s := string(result)
@@ -99,17 +102,18 @@ func ReadAtom(reader *bufio.Reader) LispObject {
 
 func ReadQuote(reader *bufio.Reader) LispObject {
 	reader.Discard(1)
-	return NewList(SYMBOLS["quote"], Read(reader))
+	lispObj, err := Read(reader)
+	if err != nil {
+		LispError(err)
+	}
+	return NewList(SYMBOLS["quote"], lispObj)
 }
 
-func Read(reader *bufio.Reader) LispObject {
+func Read(reader *bufio.Reader) (LispObject, error) {
 	for {
 		b, err := reader.Peek(1)
 		if err != nil {
-			if err == io.EOF {
-				break
-			}
-			LispError(err)
+			return NIL, err
 		}
 
 		switch b[0] {
@@ -118,15 +122,15 @@ func Read(reader *bufio.Reader) LispObject {
 			reader.Discard(1)
 			continue
 		case '(':
-			return ReadList(reader)
+			return ReadList(reader), nil
 		case '"':
-			return ReadString(reader)
+			return ReadString(reader), nil
 		case '\'':
-			return ReadQuote(reader)
+			return ReadQuote(reader), nil
 		default:
-			return ReadAtom(reader)
+			return ReadAtom(reader), nil
 		}
 	}
 
-	return NIL
+	return NIL, nil
 }

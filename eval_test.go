@@ -30,7 +30,8 @@ func TestEval(t *testing.T) {
 
 	for _, exp := range expectations {
 		reader := bufio.NewReader(strings.NewReader(exp.arg))
-		result := Eval(Read(reader), GlobalEnv())
+		lispObj, _ := Read(reader)
+		result := Eval(lispObj, GlobalEnv())
 		actual := LispObject2String(result)
 		if actual != exp.expected {
 			t.Errorf("Test Eval: Expected (eval %s) => %s, but got %s",

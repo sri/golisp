@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"io"
 )
 
 type LispObject interface{}
@@ -28,9 +29,20 @@ func Repl() {
 
 	for {
 		fmt.Print("LISP> ")
-		lispObj := Read(reader)
+		lispObj, err := Read(reader)
+
+		if err != nil {
+			if err == io.EOF {
+				fmt.Println()
+				os.Exit(0)
+			} else {
+				LispError(err)
+			}
+		}
+
 		result := Eval(lispObj, env)
 		fmt.Println(LispObject2String(result))
+
 	}
 }
 

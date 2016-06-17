@@ -15,8 +15,8 @@ func TestReverseList(t *testing.T) {
 
 	for _, exp := range expectations {
 		reader := bufio.NewReader(strings.NewReader(exp.arg))
-		result := Read(reader).(*LispList)
-		actual := LispObject2String(ReverseList(result))
+		result, _ := Read(reader)
+		actual := LispObject2String(ReverseList(result.(*LispList)))
 		if actual != exp.expected {
 			t.Errorf("TestReverseList: Expected %v => %s, but got %s",
 				exp.arg, exp.expected, actual)
