@@ -21,7 +21,7 @@ func (env *LispEnv) Print() {
 	}
 }
 
-func MakeEnv(env *LispEnv, args *LispList, vals *LispList) *LispEnv {
+func MakeEnv(env *LispEnv, args *LispList, vals *LispList) (*LispEnv, error) {
 	newEnv := new(LispEnv)
 	newEnv.current = make(map[LispSymbol]LispObject)
 
@@ -33,17 +33,21 @@ func MakeEnv(env *LispEnv, args *LispList, vals *LispList) *LispEnv {
 		if args == NIL && vals == NIL {
 			break
 		} else if args == NIL || vals == NIL {
-			LispError("excess params: args=" +
+			LispFatalError("excess params: args=" +
 				LispObject2String(args) +
 				", vals=" + LispObject2String(vals))
 		}
 
 		switch arg := args.First().(type) {
 		case LispSymbol:
-			newEnv.current[arg] = Eval(vals.First(), env)
+			result, err := Eval(vals.First(), env)
+			if err != nil {
+				return newEnv, err
+			}
+			newEnv.current[arg] = result
 			break
 		default:
-			LispError("Invalid obj, must be a symbol: " + LispObject2String(arg))
+			LispFatalError("Invalid obj, must be a symbol: " + LispObject2String(arg))
 
 		}
 
@@ -51,7 +55,7 @@ func MakeEnv(env *LispEnv, args *LispList, vals *LispList) *LispEnv {
 		vals = vals.Rest()
 	}
 
-	return newEnv
+	return newEnv, nil
 }
 
 func GlobalEnv() *LispEnv {

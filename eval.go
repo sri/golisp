@@ -31,7 +31,7 @@ func Let2Lambda(let *LispList, env *LispEnv) *LispList {
 	return result
 }
 
-func Apply(obj LispObject, actualArgs *LispList, env *LispEnv) LispObject {
+func Apply(obj LispObject, actualArgs *LispList, env *LispEnv) (LispObject, error) {
 	switch fn := obj.(type) {
 	case *LispList:
 		head := fn.First()
@@ -39,34 +39,39 @@ func Apply(obj LispObject, actualArgs *LispList, env *LispEnv) LispObject {
 			switch fnArgs := fn.Second().(type) {
 			case *LispList:
 				fnBody := fn.Third()
-				newEnv := MakeEnv(env, fnArgs, actualArgs)
+				newEnv, err := MakeEnv(env, fnArgs, actualArgs)
+				if err != nil {
+					return NIL, err
+				}
 				return Eval(fnBody, newEnv)
 			default:
-				LispError("function params need to be a list: " +
+				return NIL, LispError("function params need to be a list: " +
 					LispObject2String(obj))
 			}
 		} else if head == SYMBOLS["macro"] {
 			macroBody := fn.Third().(*LispList)
-			expansion := Eval(macroBody, env)
+			expansion, err := Eval(macroBody, env)
+			if err != nil {
+				return NIL, err
+			}
 			fmt.Printf("MACRO EXPANSION: %s => %s\n",
 				macroBody, expansion)
 			return Eval(expansion, env)
 		} else {
-			LispError("Unknown obj: " + LispObject2String(obj))
+			return NIL, LispError("Unknown obj: " + LispObject2String(obj))
 		}
 	case LispGoFn:
-		return fn(actualArgs)
+		return fn(actualArgs), nil
 	default:
-		LispError("currently only lambdas are supported")
-
+		return NIL, LispError("currently only lambdas are supported")
 	}
 
-	return NIL
+	return NIL, nil
 }
 
-func EvalList(list *LispList, env *LispEnv) LispObject {
+func EvalList(list *LispList, env *LispEnv) (LispObject, error) {
 	if list == NIL {
-		return NIL
+		return NIL, nil
 	}
 
 	switch obj := list.First().(type) {
@@ -75,18 +80,22 @@ func EvalList(list *LispList, env *LispEnv) LispObject {
 			// (if <cond> <if-true> <if-false>)
 			cond := list.Second()
 			body := list.Rest().Rest()
-			if IsTrue(Eval(cond, env)) {
+			result, err := Eval(cond, env)
+			if err != nil {
+				return NIL, err
+			}
+			if IsTrue(result) {
 				return Eval(body.First(), env)
 			}
 			return Eval(body.Second(), env)
 		} else if obj == SYMBOLS["quote"] {
 			// (quote (a b c)) => (a b c)
 			// (quote z) => z
-			return list.Second()
+			return list.Second(), nil
 		} else if obj == SYMBOLS["lambda"] {
 			// (lambda (a b c) (+ a b c))
 			// Lambdas evaluate to themselves
-			return list
+			return list, nil
 		} else if obj == SYMBOLS["let"] {
 			return Eval(Let2Lambda(list, env), env)
 		} else if obj == SYMBOLS["macro"] {
@@ -99,16 +108,26 @@ func EvalList(list *LispList, env *LispEnv) LispObject {
 			body := list.Nth(5).(*LispList)
 
 			macroFn := NewList(SYMBOLS["macro"], macroArgs, expansion)
-			newEnv := MakeEnv(env, NewList(name), NewList(NewList(SYMBOLS["quote"], macroFn)))
+			newEnv, err := MakeEnv(env, NewList(name), NewList(NewList(SYMBOLS["quote"], macroFn)))
+			if err != nil {
+				return NIL, err
+			}
 
 			return Eval(body, newEnv)
 		}
 	}
 
-	fn := Eval(list.First(), env)
+	fn, err := Eval(list.First(), env)
+	if err != nil {
+		return NIL, err
+	}
 	result := []LispObject{}
 	for args := list.Rest(); args != NIL; args = args.Rest() {
-		result = append(result, Eval(args.First(), env))
+		t, err := Eval(args.First(), env)
+		if err != nil {
+			return NIL, err
+		}
+		result = append(result, t)
 	}
 	args := NIL
 	for i := len(result) - 1; i >= 0; i-- {
@@ -117,28 +136,27 @@ func EvalList(list *LispList, env *LispEnv) LispObject {
 	return Apply(fn, args, env)
 }
 
-func EvalSymbol(sym LispSymbol, env *LispEnv) LispObject {
+func EvalSymbol(sym LispSymbol, env *LispEnv) (LispObject, error) {
 	for {
 		if env == nil {
 			break
 		}
 		if val, ok := env.current[sym]; ok {
-			return val
+			return val, nil
 		}
 		env = env.parent
 	}
 
-	LispError("unidentified symbol" + sym.name)
-	return NIL
+	return NIL, LispError("unidentified symbol: " + sym.name)
 }
 
-func Eval(obj LispObject, env *LispEnv) LispObject {
+func Eval(obj LispObject, env *LispEnv) (LispObject, error) {
 	switch o := obj.(type) {
 	case *LispList:
 		return EvalList(o, env)
 	case LispSymbol:
 		return EvalSymbol(o, env)
 	default:
-		return obj
+		return obj, nil
 	}
 }

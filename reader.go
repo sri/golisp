@@ -25,7 +25,7 @@ loop:
 		default:
 			lispObj, err := Read(reader)
 			if err != nil {
-				LispError(err)
+				LispFatalError(err)
 			}
 			result = append(result, lispObj)
 		}
@@ -42,7 +42,7 @@ func ReadString(reader *bufio.Reader) LispObject {
 	delim, _ := reader.ReadByte()
 	line, err := reader.ReadString(delim)
 	if err != nil {
-		LispError(err)
+		LispFatalError(err)
 	}
 	return LispObject(line[:len(line)-1])
 }
@@ -104,7 +104,7 @@ func ReadQuote(reader *bufio.Reader) LispObject {
 	reader.Discard(1)
 	lispObj, err := Read(reader)
 	if err != nil {
-		LispError(err)
+		LispFatalError(err)
 	}
 	return NewList(SYMBOLS["quote"], lispObj)
 }

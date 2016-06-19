@@ -36,13 +36,17 @@ func Repl() {
 				fmt.Println()
 				os.Exit(0)
 			} else {
-				LispError(err)
+				LispFatalError(err)
 			}
 		}
 
-		result := Eval(lispObj, env)
-		fmt.Println(LispObject2String(result))
+		result, err := Eval(lispObj, env)
 
+		if err == nil {
+			fmt.Println(LispObject2String(result))
+		} else {
+			fmt.Println(err)
+		}
 	}
 }
 
