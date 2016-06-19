@@ -17,6 +17,7 @@ func TestReader(t *testing.T) {
 		{"(1 2 (3.1 3.2 3.3) 4 5 \"six\")", "(1 2 (3.1 3.2 3.3) 4 5 \"six\")"},
 		{"1.34", "1.34"},
 		{"(if 10 20 30)", "(if 10 20 30)"},
+		{"`(if ,a ,@b 30)", "(backquote (if (unquote a) (unquote-splice b) 30))"},
 	}
 
 	for _, exp := range expectations {
@@ -24,7 +25,7 @@ func TestReader(t *testing.T) {
 		result, _ := Read(reader)
 		actual := LispObject2String(result)
 		if actual != exp.expected {
-			t.Errorf("TestRead: Expected (eval %v) => %s, but got %s",
+			t.Errorf("TestRead: Expected (read %v) => %s, but got %s",
 				exp.arg, exp.expected, actual)
 		}
 

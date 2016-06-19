@@ -109,6 +109,37 @@ func ReadQuote(reader *bufio.Reader) LispObject {
 	return NewList(SYMBOLS["quote"], lispObj)
 }
 
+func ReadBackquote(reader *bufio.Reader) LispObject {
+	reader.Discard(1)
+	lispObj, err := Read(reader)
+	if err != nil {
+		LispFatalError(err)
+	}
+	return NewList(SYMBOLS["backquote"], lispObj)
+}
+
+func ReadUnquote(reader *bufio.Reader) LispObject {
+	reader.Discard(1)
+
+	b, err := reader.Peek(1)
+	if err != nil {
+		LispFatalError(err)
+	}
+
+	head := SYMBOLS["unquote"]
+	switch b[0] {
+	case '@':
+		reader.Discard(1)
+		head = SYMBOLS["unquote-splice"]
+	}
+
+	lispObj, err := Read(reader)
+	if err != nil {
+		LispFatalError(err)
+	}
+	return NewList(head, lispObj)
+}
+
 func Read(reader *bufio.Reader) (LispObject, error) {
 	for {
 		b, err := reader.Peek(1)
@@ -127,6 +158,10 @@ func Read(reader *bufio.Reader) (LispObject, error) {
 			return ReadString(reader), nil
 		case '\'':
 			return ReadQuote(reader), nil
+		case '`':
+			return ReadBackquote(reader), nil
+		case ',':
+			return ReadUnquote(reader), nil
 		default:
 			return ReadAtom(reader), nil
 		}

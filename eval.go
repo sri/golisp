@@ -114,6 +114,8 @@ func EvalList(list *LispList, env *LispEnv) (LispObject, error) {
 			}
 
 			return Eval(body, newEnv)
+		} else if obj == SYMBOLS["backquote"] {
+			return list, nil
 		}
 	}
 

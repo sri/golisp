@@ -8,11 +8,14 @@ var SYMBOLS = make(map[string]LispSymbol)
 
 func InitSymbols() {
 	syms := []string{
+		"backquote",
 		"if",
 		"lambda",
 		"let",
 		"macro",
 		"quote",
+		"unquote",
+		"unquote-splice",
 	}
 
 	for _, sym := range syms {
