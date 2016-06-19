@@ -63,5 +63,6 @@ func GlobalEnv() *LispEnv {
 	env.current = make(map[LispSymbol]LispObject)
 	env.current[LispSymbol{"+"}] = LispGoFn(LispFn_Add)
 	env.current[LispSymbol{"print"}] = LispGoFn(LispFn_Print)
+	env.current[LispSymbol{"s+"}] = LispGoFn(LispFn_StringConcat)
 	return env
 }

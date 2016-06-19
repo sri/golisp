@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 type LispGoFn func(*LispList) LispObject
@@ -24,6 +25,24 @@ func LispFn_Add(args *LispList) LispObject {
 	}
 
 	return LispObject(sum)
+}
+
+func LispFn_StringConcat(args *LispList) LispObject {
+	s := []string{}
+	for {
+		if args == NIL {
+			break
+		}
+		switch arg := args.First().(type) {
+		case string:
+			s = append(s, fmt.Sprintf("%s", arg))
+		default:
+			s = append(s, LispObject2String(arg))
+		}
+
+		args = args.Rest()
+	}
+	return LispObject(strings.Join(s, ""))
 }
 
 func LispFn_Print(args *LispList) LispObject {
