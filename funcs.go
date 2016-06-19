@@ -26,13 +26,19 @@ func LispFn_Add(args *LispList) LispObject {
 	return LispObject(sum)
 }
 
-// TODO: fix bug with string: prints out with quotes
 func LispFn_Print(args *LispList) LispObject {
 	for {
 		if args == NIL {
 			break
 		}
-		fmt.Printf("%s ", LispObject2String(args.First()))
+
+		switch arg := args.First().(type) {
+		case string:
+			fmt.Printf("%s ", arg)
+		default:
+			fmt.Printf("%s ", LispObject2String(arg))
+		}
+
 		args = args.Rest()
 	}
 	fmt.Println()
