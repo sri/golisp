@@ -69,6 +69,10 @@ func Apply(obj LispObject, actualArgs *LispList, env *LispEnv) (LispObject, erro
 	return NIL, nil
 }
 
+func ExpandBackquote(list *LispList, env *LispEnv) (LispObject, error) {
+	return list, nil
+}
+
 func EvalList(list *LispList, env *LispEnv) (LispObject, error) {
 	if list == NIL {
 		return NIL, nil
@@ -115,7 +119,7 @@ func EvalList(list *LispList, env *LispEnv) (LispObject, error) {
 
 			return Eval(body, newEnv)
 		} else if obj == SYMBOLS["backquote"] {
-			return list, nil
+			return ExpandBackquote(list, env)
 		}
 	}
 
