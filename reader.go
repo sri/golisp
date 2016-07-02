@@ -33,7 +33,7 @@ loop:
 
 	list := NIL
 	for i := len(result) - 1; i >= 0; i-- {
-		list = Push(result[i], list)
+		list = Cons(result[i], list)
 	}
 	return list
 }

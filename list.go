@@ -72,7 +72,7 @@ func (list *LispList) String() string {
 	return strings.Join(result, "")
 }
 
-func Push(first LispObject, rest *LispList) *LispList {
+func Cons(first LispObject, rest *LispList) *LispList {
 	result := new(LispList)
 	result.first = first
 	result.rest = rest
@@ -90,7 +90,7 @@ func ReverseList(list *LispList) *LispList {
 	}
 	result := NIL
 	for i := 0; i < len(ary); i++ {
-		result = Push(ary[i], result)
+		result = Cons(ary[i], result)
 	}
 	return result
 }
@@ -98,7 +98,7 @@ func ReverseList(list *LispList) *LispList {
 func NewList(args ...LispObject) *LispList {
 	result := NIL
 	for i := len(args) - 1; i >= 0; i-- {
-		result = Push(args[i], result)
+		result = Cons(args[i], result)
 	}
 	return result
 }

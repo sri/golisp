@@ -18,8 +18,8 @@ func Let2Lambda(let *LispList, env *LispEnv) *LispList {
 			break
 		}
 
-		lambdaArgs = Push(letExpr.First(), lambdaArgs)
-		actualArgs = Push(letExpr.Second(), actualArgs)
+		lambdaArgs = Cons(letExpr.First(), lambdaArgs)
+		actualArgs = Cons(letExpr.Second(), actualArgs)
 
 		letExpr = letExpr.Rest().Rest()
 	}
@@ -27,7 +27,7 @@ func Let2Lambda(let *LispList, env *LispEnv) *LispList {
 	lambdaArgs = ReverseList(lambdaArgs)
 	actualArgs = ReverseList(actualArgs)
 
-	result := Push(NewList(SYMBOLS["lambda"], lambdaArgs, body), actualArgs)
+	result := Cons(NewList(SYMBOLS["lambda"], lambdaArgs, body), actualArgs)
 	return result
 }
 
@@ -137,7 +137,7 @@ func EvalList(list *LispList, env *LispEnv) (LispObject, error) {
 	}
 	args := NIL
 	for i := len(result) - 1; i >= 0; i-- {
-		args = Push(result[i], args)
+		args = Cons(result[i], args)
 	}
 	return Apply(fn, args, env)
 }
