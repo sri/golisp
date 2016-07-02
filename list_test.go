@@ -26,7 +26,7 @@ func TestReverseList(t *testing.T) {
 }
 
 func TestNth(t *testing.T) {
-	a := NewList(1, 2, 3)
+	a := List(1, 2, 3)
 
 	if a.Nth(0) != NIL {
 		t.Errorf("Nth(0)")

@@ -95,7 +95,7 @@ func ReverseList(list *LispList) *LispList {
 	return result
 }
 
-func NewList(args ...LispObject) *LispList {
+func List(args ...LispObject) *LispList {
 	result := NIL
 	for i := len(args) - 1; i >= 0; i-- {
 		result = Cons(args[i], result)

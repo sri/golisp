@@ -27,7 +27,7 @@ func Let2Lambda(let *LispList, env *LispEnv) *LispList {
 	lambdaArgs = ReverseList(lambdaArgs)
 	actualArgs = ReverseList(actualArgs)
 
-	result := Cons(NewList(SYMBOLS["lambda"], lambdaArgs, body), actualArgs)
+	result := Cons(List(SYMBOLS["lambda"], lambdaArgs, body), actualArgs)
 	return result
 }
 
@@ -111,8 +111,8 @@ func EvalList(list *LispList, env *LispEnv) (LispObject, error) {
 			expansion := list.Nth(4).(*LispList)
 			body := list.Nth(5).(*LispList)
 
-			macroFn := NewList(SYMBOLS["macro"], macroArgs, expansion)
-			newEnv, err := MakeEnv(env, NewList(name), NewList(NewList(SYMBOLS["quote"], macroFn)))
+			macroFn := List(SYMBOLS["macro"], macroArgs, expansion)
+			newEnv, err := MakeEnv(env, List(name), List(List(SYMBOLS["quote"], macroFn)))
 			if err != nil {
 				return NIL, err
 			}
