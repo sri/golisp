@@ -32,3 +32,14 @@ LISP> (let (a 1 b 2 c 3) (+ a b c))
 LISP> (s+ "Hello, " "world!")
 "Hello, world!"
 ```
+
+### Lambdas
+
+```lisp
+LISP> ((lambda (a b) (+ a b)) 1 2)
+3
+LISP> (lambda () 'a)
+(lambda nil (quote a))
+LISP> ((lambda () 'a))
+a
+```
