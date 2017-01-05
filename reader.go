@@ -106,7 +106,7 @@ func ReadQuote(reader *bufio.Reader) LispObject {
 	if err != nil {
 		LispFatalError(err)
 	}
-	return NewList(SYMBOLS["quote"], lispObj)
+	return List(SYMBOLS["quote"], lispObj)
 }
 
 func ReadBackquote(reader *bufio.Reader) LispObject {
@@ -115,7 +115,7 @@ func ReadBackquote(reader *bufio.Reader) LispObject {
 	if err != nil {
 		LispFatalError(err)
 	}
-	return NewList(SYMBOLS["backquote"], lispObj)
+	return List(SYMBOLS["backquote"], lispObj)
 }
 
 func ReadUnquote(reader *bufio.Reader) LispObject {
@@ -137,7 +137,7 @@ func ReadUnquote(reader *bufio.Reader) LispObject {
 	if err != nil {
 		LispFatalError(err)
 	}
-	return NewList(head, lispObj)
+	return List(head, lispObj)
 }
 
 func Read(reader *bufio.Reader) (LispObject, error) {
