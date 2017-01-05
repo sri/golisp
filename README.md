@@ -1,5 +1,14 @@
 #### A simple lisp interpreter in Go
 
+### How to run it
+
+```
+git clone https://github.com/sri/golisp.git
+cd golisp
+export GOPATH=`pwd`
+go build && ./golisp
+```
+
 ### Constants
 
 ```lisp
