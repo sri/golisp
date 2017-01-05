@@ -9,6 +9,7 @@ var SYMBOLS = make(map[string]LispSymbol)
 func InitSymbols() {
 	syms := []string{
 		"backquote",
+		"def",
 		"if",
 		"lambda",
 		"let",

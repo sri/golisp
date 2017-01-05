@@ -61,3 +61,27 @@ LISP> (if 1 2 3)
 LISP> (if nil 2 3)
 3
 ```
+
+## Set/define variables and/or functions in current env
+
+```lisp
+LISP> (def a 1)
+1
+LISP> (def b 2)
+2
+LISP> (+ a b)
+3
+LISP> (def a (lambda (x) (+ x 1)))
+(Warning: shadowing var: a, current val: 1)
+(lambda (x) (+ x 1))
+LISP> (a 100)
+101
+LISP> (let (a 1) (def c 1000))
+1000
+LISP> c
+unidentified symbol: c
+LISP> (let (a 1) (def c 1000) c)
+1000
+LISP> c
+unidentified symbol: c
+```

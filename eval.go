@@ -92,6 +92,14 @@ func EvalList(list *LispList, env *LispEnv) (LispObject, error) {
 				return Eval(body.First(), env)
 			}
 			return Eval(body.Second(), env)
+		} else if obj == SYMBOLS["def"] {
+			// (def a (+ 1 2 3)) => 6
+			result, err := Eval(list.Third(), env)
+			if err != nil {
+				return NIL, err
+			}
+			env.Def(list.Second().(LispSymbol), result)
+			return result, nil
 		} else if obj == SYMBOLS["quote"] {
 			// (quote (a b c)) => (a b c)
 			// (quote z) => z

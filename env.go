@@ -21,6 +21,16 @@ func (env *LispEnv) Print() {
 	}
 }
 
+func (env *LispEnv) Def(sym LispSymbol, result LispObject) {
+	if val, ok := env.current[sym]; ok {
+		fmt.Println(
+			"(Warning: shadowing var: " +
+				LispObject2String(sym) +
+				", current val: " + LispObject2String(val) + ")")
+	}
+	env.current[sym] = result
+}
+
 func MakeEnv(env *LispEnv, args *LispList, vals *LispList) (*LispEnv, error) {
 	newEnv := new(LispEnv)
 	newEnv.current = make(map[LispSymbol]LispObject)
