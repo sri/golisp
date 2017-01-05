@@ -52,3 +52,12 @@ LISP> (lambda () 'a)
 LISP> ((lambda () 'a))
 a
 ```
+
+### If expressions
+
+```lisp
+LISP> (if 1 2 3)
+2
+LISP> (if nil 2 3)
+3
+```
