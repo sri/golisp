@@ -6,6 +6,7 @@
 git clone https://github.com/sri/golisp.git
 cd golisp
 export GOPATH=`pwd`
+go test -v # optional. runs the tests
 go build && ./golisp
 ```
 
