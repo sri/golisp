@@ -9,12 +9,12 @@ type LispList struct {
 	rest  *LispList
 }
 
-var NIL *LispList = new(LispList)
+var LISP_NIL *LispList = new(LispList)
 
 // Methods on LispList:
 func (list *LispList) First() LispObject {
-	if list == NIL {
-		return NIL
+	if list == LISP_NIL {
+		return LISP_NIL
 	}
 	return list.first
 }
@@ -32,19 +32,19 @@ func (list *LispList) Nth(n int) LispObject {
 	l := list
 	for {
 		if n <= 0 {
-			return NIL
+			return LISP_NIL
 		} else if n == 1 {
 			return l.First()
 		}
 		l = l.Rest()
 		n--
 	}
-	return NIL
+	return LISP_NIL
 }
 
 func (list *LispList) Rest() *LispList {
-	if list == NIL {
-		return NIL
+	if list == LISP_NIL {
+		return LISP_NIL
 	}
 	return list.rest
 }
@@ -52,18 +52,18 @@ func (list *LispList) Rest() *LispList {
 func (list *LispList) String() string {
 	result := []string{}
 
-	if list == NIL {
+	if list == LISP_NIL {
 		return "nil"
 	}
 
 	result = append(result, "(")
 	for {
-		if list == NIL {
+		if list == LISP_NIL {
 			break
 		}
 		result = append(result, LispObject2String(list.First()))
 		list = list.Rest()
-		if list != NIL {
+		if list != LISP_NIL {
 			result = append(result, " ")
 		}
 	}
@@ -82,13 +82,13 @@ func Cons(first LispObject, rest *LispList) *LispList {
 func ReverseList(list *LispList) *LispList {
 	ary := []LispObject{}
 	for {
-		if list == NIL {
+		if list == LISP_NIL {
 			break
 		}
 		ary = append(ary, list.First())
 		list = list.Rest()
 	}
-	result := NIL
+	result := LISP_NIL
 	for i := 0; i < len(ary); i++ {
 		result = Cons(ary[i], result)
 	}
@@ -96,7 +96,7 @@ func ReverseList(list *LispList) *LispList {
 }
 
 func List(args ...LispObject) *LispList {
-	result := NIL
+	result := LISP_NIL
 	for i := len(args) - 1; i >= 0; i-- {
 		result = Cons(args[i], result)
 	}

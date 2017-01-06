@@ -40,9 +40,9 @@ func MakeEnv(env *LispEnv, args *LispList, vals *LispList) (*LispEnv, error) {
 	}
 
 	for {
-		if args == NIL && vals == NIL {
+		if args == LISP_NIL && vals == LISP_NIL {
 			break
-		} else if args == NIL || vals == NIL {
+		} else if args == LISP_NIL || vals == LISP_NIL {
 			LispFatalError("excess params: args=" +
 				LispObject2String(args) +
 				", vals=" + LispObject2String(vals))

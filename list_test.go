@@ -28,7 +28,7 @@ func TestReverseList(t *testing.T) {
 func TestNth(t *testing.T) {
 	a := List(1, 2, 3)
 
-	if a.Nth(0) != NIL {
+	if a.Nth(0) != LISP_NIL {
 		t.Errorf("Nth(0)")
 	}
 
@@ -40,7 +40,7 @@ func TestNth(t *testing.T) {
 		t.Errorf("Nth(3)")
 	}
 
-	if a.Nth(100) != NIL {
+	if a.Nth(100) != LISP_NIL {
 		t.Errorf("Nth(100)")
 	}
 }

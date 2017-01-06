@@ -31,7 +31,7 @@ loop:
 		}
 	}
 
-	list := NIL
+	list := LISP_NIL
 	for i := len(result) - 1; i >= 0; i-- {
 		list = Cons(result[i], list)
 	}
@@ -87,7 +87,7 @@ func ReadAtom(reader *bufio.Reader) LispObject {
 
 	s := string(result)
 	if s == "nil" {
-		return NIL
+		return LISP_NIL
 	} else if val, ok := SYMBOLS[s]; ok {
 		return val
 	}
@@ -144,7 +144,7 @@ func Read(reader *bufio.Reader) (LispObject, error) {
 	for {
 		b, err := reader.Peek(1)
 		if err != nil {
-			return NIL, err
+			return LISP_NIL, err
 		}
 
 		switch b[0] {
@@ -167,5 +167,5 @@ func Read(reader *bufio.Reader) (LispObject, error) {
 		}
 	}
 
-	return NIL, nil
+	return LISP_NIL, nil
 }

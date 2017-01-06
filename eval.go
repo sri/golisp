@@ -8,13 +8,13 @@ import (
 // (let (a 10 b 20 c 30) ...) =>
 // ((lambda (a b c) ...) 10 20 30)
 func Let2Lambda(let *LispList, env *LispEnv) *LispList {
-	lambdaArgs := NIL
-	actualArgs := NIL
+	lambdaArgs := LISP_NIL
+	actualArgs := LISP_NIL
 	body := let.Third().(*LispList)
 
 	letExpr := let.Second().(*LispList)
 	for {
-		if letExpr == NIL {
+		if letExpr == LISP_NIL {
 			break
 		}
 
@@ -41,32 +41,32 @@ func Apply(obj LispObject, actualArgs *LispList, env *LispEnv) (LispObject, erro
 				fnBody := fn.Third()
 				newEnv, err := MakeEnv(env, fnArgs, actualArgs)
 				if err != nil {
-					return NIL, err
+					return LISP_NIL, err
 				}
 				return Eval(fnBody, newEnv)
 			default:
-				return NIL, LispError("function params need to be a list: " +
+				return LISP_NIL, LispError("function params need to be a list: " +
 					LispObject2String(obj))
 			}
 		} else if head == SYMBOLS["macro"] {
 			macroBody := fn.Third().(*LispList)
 			expansion, err := Eval(macroBody, env)
 			if err != nil {
-				return NIL, err
+				return LISP_NIL, err
 			}
 			fmt.Printf("MACRO EXPANSION: %s => %s\n",
 				macroBody, expansion)
 			return Eval(expansion, env)
 		} else {
-			return NIL, LispError("Unknown obj: " + LispObject2String(obj))
+			return LISP_NIL, LispError("Unknown obj: " + LispObject2String(obj))
 		}
 	case LispGoFn:
 		return fn(actualArgs), nil
 	default:
-		return NIL, LispError("currently only lambdas are supported")
+		return LISP_NIL, LispError("currently only lambdas are supported")
 	}
 
-	return NIL, nil
+	return LISP_NIL, nil
 }
 
 func ExpandBackquote(list *LispList, env *LispEnv) (LispObject, error) {
@@ -74,8 +74,8 @@ func ExpandBackquote(list *LispList, env *LispEnv) (LispObject, error) {
 }
 
 func EvalList(list *LispList, env *LispEnv) (LispObject, error) {
-	if list == NIL {
-		return NIL, nil
+	if list == LISP_NIL {
+		return LISP_NIL, nil
 	}
 
 	switch obj := list.First().(type) {
@@ -86,7 +86,7 @@ func EvalList(list *LispList, env *LispEnv) (LispObject, error) {
 			body := list.Rest().Rest()
 			result, err := Eval(cond, env)
 			if err != nil {
-				return NIL, err
+				return LISP_NIL, err
 			}
 			if IsTrue(result) {
 				return Eval(body.First(), env)
@@ -96,7 +96,7 @@ func EvalList(list *LispList, env *LispEnv) (LispObject, error) {
 			// (def a (+ 1 2 3)) => 6
 			result, err := Eval(list.Third(), env)
 			if err != nil {
-				return NIL, err
+				return LISP_NIL, err
 			}
 			env.Def(list.Second().(LispSymbol), result)
 			return result, nil
@@ -122,7 +122,7 @@ func EvalList(list *LispList, env *LispEnv) (LispObject, error) {
 			macroFn := List(SYMBOLS["macro"], macroArgs, expansion)
 			newEnv, err := MakeEnv(env, List(name), List(List(SYMBOLS["quote"], macroFn)))
 			if err != nil {
-				return NIL, err
+				return LISP_NIL, err
 			}
 
 			return Eval(body, newEnv)
@@ -133,17 +133,17 @@ func EvalList(list *LispList, env *LispEnv) (LispObject, error) {
 
 	fn, err := Eval(list.First(), env)
 	if err != nil {
-		return NIL, err
+		return LISP_NIL, err
 	}
 	result := []LispObject{}
-	for args := list.Rest(); args != NIL; args = args.Rest() {
+	for args := list.Rest(); args != LISP_NIL; args = args.Rest() {
 		t, err := Eval(args.First(), env)
 		if err != nil {
-			return NIL, err
+			return LISP_NIL, err
 		}
 		result = append(result, t)
 	}
-	args := NIL
+	args := LISP_NIL
 	for i := len(result) - 1; i >= 0; i-- {
 		args = Cons(result[i], args)
 	}
@@ -161,7 +161,7 @@ func EvalSymbol(sym LispSymbol, env *LispEnv) (LispObject, error) {
 		env = env.parent
 	}
 
-	return NIL, LispError("unidentified symbol: " + sym.name)
+	return LISP_NIL, LispError("unidentified symbol: " + sym.name)
 }
 
 func Eval(obj LispObject, env *LispEnv) (LispObject, error) {

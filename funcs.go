@@ -10,7 +10,7 @@ type LispGoFn func(*LispList) LispObject
 func LispFn_Add(args *LispList) LispObject {
 	sum := float64(0)
 	for {
-		if args == NIL {
+		if args == LISP_NIL {
 			break
 		}
 		switch n := args.First().(type) {
@@ -30,7 +30,7 @@ func LispFn_Add(args *LispList) LispObject {
 func LispFn_StringConcat(args *LispList) LispObject {
 	s := []string{}
 	for {
-		if args == NIL {
+		if args == LISP_NIL {
 			break
 		}
 		switch arg := args.First().(type) {
@@ -47,7 +47,7 @@ func LispFn_StringConcat(args *LispList) LispObject {
 
 func LispFn_Print(args *LispList) LispObject {
 	for {
-		if args == NIL {
+		if args == LISP_NIL {
 			break
 		}
 
@@ -61,5 +61,5 @@ func LispFn_Print(args *LispList) LispObject {
 		args = args.Rest()
 	}
 	fmt.Println()
-	return NIL
+	return LISP_NIL
 }
